@@ -8,7 +8,6 @@ import java.util.Collections;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.*;
 import static specs.Specs.*;
 
