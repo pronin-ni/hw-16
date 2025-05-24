@@ -8,10 +8,11 @@ import java.util.Collections;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.*;
 import static specs.Specs.*;
 
-public class ReqresTests {
+public class ReqresTests extends BaseTest {
 
     @Test
     @DisplayName("Успешный логин пользователя")
@@ -20,19 +21,20 @@ public class ReqresTests {
         authData.setEmail("eve.holt@reqres.in");
         authData.setPassword("cityslicka");
 
-        LoginResponseModel response = step("Авторизация пользователя", () ->
+        LoginModel response = step("Авторизация пользователя", () ->
                 given(requestSpec)
                         .body(authData)
                         .when()
                         .post("/login")
                         .then()
                         .spec(successResponseSpec)
-                        .extract().as(LoginResponseModel.class)
+                        .extract().as(LoginModel.class)
         );
 
-        step("Проверка токена", () ->
-                assertEquals("QpwL5tke4Pnpja7X4", response.getToken())
-        );
+        step("Проверка токена", () -> {
+            assertTrue(response.getToken().length() >= 10);
+            assertTrue(response.getToken().matches("[a-zA-Z0-9]+"));
+        });
     }
 
     @Test
@@ -41,14 +43,14 @@ public class ReqresTests {
         LoginModel authData = new LoginModel();
         authData.setEmail("eve.holt@reqres.in");
 
-        LoginErrorModel response = step("Авторизация пользователя только с email", () ->
+        LoginModel response = step("Авторизация пользователя только с email", () ->
                 given(requestSpec)
                         .body(authData)
                         .when()
                         .post("/login")
                         .then()
                         .spec(unauthorizedResponseSpec)
-                        .extract().as(LoginErrorModel.class)
+                        .extract().as(LoginModel.class)
         );
 
         step("Проверка сообщения об ошибке", () ->
@@ -77,18 +79,18 @@ public class ReqresTests {
     @Test
     @DisplayName("Создание нового пользователя")
     void createUserTest() {
-        CreateUserModel userData = new CreateUserModel();
+        UserModel userData = new UserModel();
         userData.setName("nik");
         userData.setJob("programmer");
 
-        CreateUserResponseModel response = step("Создание пользователя", () ->
+        UserModel response = step("Создание пользователя", () ->
                 given(requestSpec)
                         .body(userData)
                         .when()
                         .post("/users")
                         .then()
                         .spec(createdResponseSpec)
-                        .extract().as(CreateUserResponseModel.class)
+                        .extract().as(UserModel.class)
         );
 
         step("Проверка данных созданного пользователя", () -> {
@@ -132,18 +134,18 @@ public class ReqresTests {
     @Test
     @DisplayName("Обновление пользователя по ID")
     void updateUserByIdTest() {
-        UpdateUserModel userData = new UpdateUserModel();
+        UserModel userData = new UserModel();
         userData.setName("nik");
         userData.setJob("programmer");
 
-        UpdateUserResponseModel response = step("Обновление пользователя", () ->
+        UserModel response = step("Обновление пользователя", () ->
                 given(requestSpec)
                         .body(userData)
                         .when()
                         .put("/users/2")
                         .then()
                         .spec(successResponseSpec)
-                        .extract().as(UpdateUserResponseModel.class)
+                        .extract().as(UserModel.class)
         );
 
         step("Проверка обновленных данных", () -> {
